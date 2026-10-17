@@ -8,7 +8,6 @@
     <div class="contact__scrim" data-close></div>
     <div class="contact__box" role="dialog" aria-modal="true" aria-labelledby="contact-title">
       <button class="contact__close" type="button" data-close aria-label="Close">Close ✕</button>
-      <p class="contact__eyebrow">Contact</p>
       <h2 class="contact__title" id="contact-title">Let’s work<br>together</h2>
       <p class="contact__email" id="contact-email">${EMAIL}</p>
       <div class="contact__actions">

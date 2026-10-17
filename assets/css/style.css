@@ -93,6 +93,7 @@ body.home-page { height: 100vh; height: 100dvh; overflow: hidden; }
   letter-spacing: var(--track);
   text-transform: uppercase;
 }
+.hero__foot .muted { color: var(--grey); }
 
 /* ---------- Work page intro ---------- */
 .intro { height: calc(341 * var(--u)); min-height: 220px; position: relative; }
@@ -162,7 +163,7 @@ body.home-page { height: 100vh; height: 100dvh; overflow: hidden; }
 .contact__box {
   position: relative; width: min(560px, 100%);
   background: var(--white); border: 1px solid #e6e6e6;
-  padding: 48px; box-shadow: 0 30px 80px rgba(0,0,0,.08);
+  padding: 56px 48px 48px; box-shadow: 0 30px 80px rgba(0,0,0,.08);
   opacity: 0; transform: translateY(12px); transition: opacity .25s ease, transform .25s ease;
 }
 .contact.is-open .contact__scrim { opacity: 1; }
@@ -173,7 +174,7 @@ body.home-page { height: 100vh; height: 100dvh; overflow: hidden; }
 }
 .contact__close:hover { color: var(--black); }
 .contact__eyebrow { font: 600 12px/1 var(--sans); letter-spacing: var(--track); text-transform: uppercase; color: var(--grey); }
-.contact__title { margin-top: 20px; font: 400 clamp(40px, 6vw, 60px)/0.95 var(--serif); letter-spacing: -0.02em; text-transform: uppercase; }
+.contact__title { font: 400 clamp(40px, 6vw, 60px)/0.95 var(--serif); letter-spacing: -0.02em; text-transform: uppercase; }
 .contact__email { margin-top: 28px; font: 400 18px/1.4 var(--sans); user-select: all; word-break: break-all; }
 .contact__actions { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 12px; }
 .contact__btn {
@@ -196,14 +197,17 @@ body.home-page { height: 100vh; height: 100dvh; overflow: hidden; }
 
   .hero { height: 100svh; min-height: 560px; }
   .hero__name {
-    position: absolute; left: 20px; right: 20px; width: auto; height: auto; transform: translateY(-50%);
+    /* Figma "Homepage – Mobile": lines 54.28px apart at 58.5px, block top 98.28px above centre */
+    position: absolute; left: 20px; right: 20px; width: auto; height: auto; transform: translateY(-1.68em);
     font-size: clamp(48px, 15vw, 92px); line-height: 1.12;
     display: flex; flex-direction: column;
   }
   .hero__name span { position: static; }
-  .hero__name span:nth-child(2) { padding-left: 14%; }
-  .hero__name span:nth-child(3) { padding-left: 30%; }
-  .hero__foot { bottom: 40px; padding: 0 20px; font-size: 10px; gap: 16px; }
+  .hero__name span + span { margin-top: -0.1921em; }
+  .hero__name span:nth-child(1) { padding-left: 6%; }
+  .hero__name span:nth-child(2) { padding-left: 20%; }
+  .hero__name span:nth-child(3) { padding-left: 36%; }
+  .hero__foot { bottom: 21px; padding: 0 20px; font-size: 10px; flex-direction: column; gap: 4px; }
 
   /* 4-col grid: 20px margins, 16px gutters; intro text starts on column 2 */
   .intro { height: auto; min-height: 0; padding: 32px 20px 48px calc(20px + (100% - 88px) / 4 + 16px); }
@@ -230,7 +234,7 @@ body.home-page { height: 100vh; height: 100dvh; overflow: hidden; }
   .case--diag .case__desc { color: var(--white); }
   .case__cta { opacity: 1; transform: none; }
 
-  .contact__box { padding: 40px 24px 32px; }
+  .contact__box { padding: 56px 24px 32px; }
   .footer { padding: 40px 20px; font-size: 11px; flex-direction: column; align-items: flex-start; gap: 12px; }
 }
 
