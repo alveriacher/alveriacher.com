@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>SIT Website — Alveria Cher</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/case.css">
+</head>
+<body class="cs-page">
+  <a class="cs-close" href="../work.html" aria-label="Close case study and return to Work">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13"/></svg>
+  </a>
+  <main>
+    <section class="lock" id="lock" hidden>
+      <div class="lock__box">
+        <p class="lock__eyebrow"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><rect x="2" y="5.2" width="8" height="5.8" rx="1"/><path d="M4 5.2V3.6a2 2 0 0 1 4 0v1.6"/></svg> Case Study 02 · Protected</p>
+        <h1 class="lock__title is-red">SIT Website</h1>
+        <p class="lock__text">This case study is password protected. Enter the password to view the full project.</p>
+        <form class="lock__form" id="lock-form" autocomplete="off">
+          <label for="lock-input" style="position:absolute;left:-9999px">Password</label>
+          <input id="lock-input" type="password" placeholder="Enter password" autocomplete="current-password">
+          <button type="submit">Unlock <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></button>
+        </form>
+        <p class="lock__error" id="lock-error" role="alert"></p>
+        <p class="lock__help">Don’t have the password? <a href="mailto:alveriacher@gmail.com?subject=Portfolio%20password%20request" data-contact>Request access</a></p>
+      </div>
+    </section>
+    <div class="deck" id="content" hidden></div>
+  </main>
+
+  <script type="application/json" id="payload">{"salt":"LcletJTECaCvjjIFJF2E7A==","iv":"v9eCBNa513+sx1XI","data":"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"}</script>
+  <script src="../assets/js/deck.js"></script>
+  <script src="../assets/js/unlock.js"></script>
+  <script src="../assets/js/contact.js"></script>
+</body>
+</html>
