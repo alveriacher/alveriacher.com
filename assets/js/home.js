@@ -1,97 +1,104 @@
-// Homepage: three "scenes" (Hello → About → Skills) in one fixed screen.
-// The nav, text and footer never move. The page still scrolls natively (so
-// trackpads, mouse wheels and touch feel normal), but the scroll position is
-// only used as input: each scroll gesture, up or down, swaps the text by one
-// scene with a line-by-line rise + fade.
+// Homepage: four "scenes" (Hello → About → Skills → Contact card) in one fixed screen.
+// The page itself never scrolls. Wheel / trackpad, finger swipes and keys are read
+// directly: each gesture moves one scene in the direction of the gesture, straight
+// away, and the text swaps with a quick line-by-line rise + fade.
 (() => {
   const scenes = [...document.querySelectorAll('.hero__scene')];
-  const hero = document.querySelector('.hero');
-  if (!scenes.length || !hero) return;
+  if (!scenes.length) return;
 
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const OUT_MS = reduce ? 0 : 300;     // old text fades out, then the new text rises in
-  const TRIGGER_PX = 60;               // this much scrolling in one direction swaps the text
-  const QUIET_MS = 160;                // no scroll for this long = the gesture has ended
-  const MIN_LOCK_MS = reduce ? 100 : 650;
-
-  // a tall invisible track to scroll over; we start in its middle so there is
-  // always room to scroll both ways, and quietly re-centre when near an end
-  const track = document.createElement('div');
-  track.className = 'scroll-track';
-  track.setAttribute('aria-hidden', 'true');
-  hero.after(track);
-  // instant jump (the site sets scroll-behavior: smooth, which must not apply here)
-  const jump = y => scrollTo({ top: y, left: 0, behavior: 'instant' });
-  const mid = () => Math.round((track.offsetHeight - innerHeight) / 2);
-  const nearEdge = () => scrollY < innerHeight * 4 || scrollY > track.offsetHeight - innerHeight * 5;
+  const OUT_MS = reduce ? 0 : 180;    // old text fades out, then the new text rises in
 
   scenes.forEach(s => s.querySelectorAll('.scene-line').forEach((el, i) => el.style.setProperty('--i', i)));
   document.body.classList.add('scenes-ready');
-  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
-  let cur = Math.max(0, scenes.findIndex(s => s.dataset.scene === location.hash.slice(1)));
-  let swapTimer = 0, quietTimer = 0, locked = false, unlockAt = 0;
-  let anchor = null; // scroll position the next gesture is measured from (null = take the next reading)
+  const byName = name => scenes.findIndex(s => s.dataset.scene === name);
+  // scenes on screen for scene i (an overlay scene keeps the one it sits over)
+  const onScreen = i => { const o = scenes[i].dataset.over; return o ? [byName(o), i] : [i]; };
+
+  let cur = Math.max(0, byName(location.hash.slice(1)));
+  let swapTimer = 0;
 
   const bgs = [...document.querySelectorAll('.hero__bg')];
-  const setHidden = () => {
+  const sync = () => {
     scenes.forEach((s, i) => {
       const off = i !== cur; // only the top scene is interactive
       s.setAttribute('aria-hidden', off);
       s.inert = off;
     });
-    // background, nav + footer colour follow the scene straight away (the text follows after its fade-out)
-    const s = scenes[onScreen(cur)[0]]; // an overlay takes the look of the scene below it
+    const look = scenes[onScreen(cur)[0]]; // an overlay takes the look of the scene below it
     document.body.dataset.scene = scenes[cur].dataset.scene;
-    document.body.classList.toggle('is-dark', s.dataset.theme === 'dark');
-    bgs.forEach(b => b.classList.toggle('is-shown', b.dataset.for === s.dataset.scene));
+    document.body.classList.toggle('is-dark', look.dataset.theme === 'dark');
+    bgs.forEach(b => b.classList.toggle('is-shown', b.dataset.for === look.dataset.scene));
   };
 
-  // scenes that are on screen for scene i (an overlay scene keeps the one it sits over)
-  const byName = name => scenes.findIndex(s => s.dataset.scene === name);
-  const onScreen = i => { const o = scenes[i].dataset.over; return o ? [byName(o), i] : [i]; };
-
   function show(n) {
-    if (n < 0 || n >= scenes.length || n === cur) return false;
+    n = Math.max(0, Math.min(scenes.length - 1, n));
+    if (n === cur) return false;
     const before = onScreen(cur), after = onScreen(n);
     const leaving = before.filter(i => !after.includes(i));
-    const entering = after.filter(i => !before.includes(i));
     clearTimeout(swapTimer);
     scenes.forEach((s, i) => { if (!before.includes(i)) s.classList.remove('is-leaving', 'is-active'); });
     leaving.forEach(i => { scenes[i].classList.remove('is-active'); scenes[i].classList.add('is-leaving'); });
     cur = n;
-    setHidden();
+    sync();
     swapTimer = setTimeout(() => {
       scenes.forEach((s, i) => { s.classList.remove('is-leaving'); s.classList.toggle('is-active', after.includes(i)); });
     }, leaving.length ? OUT_MS : 0);
     return true;
   }
 
-  function onQuiet() {
-    const wait = unlockAt - performance.now();
-    if (wait > 0) { quietTimer = setTimeout(onQuiet, wait); return; }
-    if (nearEdge()) { jump(mid()); anchor = null; } // instant and invisible: nothing on screen scrolls
-    else anchor = scrollY;
-    locked = false;
-  }
+  const panelOpen = () => { const c = document.querySelector('.contact'); return c && !c.hidden; };
 
-  addEventListener('scroll', () => {
-    clearTimeout(quietTimer);
-    quietTimer = setTimeout(onQuiet, QUIET_MS);
-    if (locked) return;                 // rest of the gesture (momentum included) is absorbed
-    if (anchor === null) { anchor = scrollY; return; }
-    const d = scrollY - anchor;
-    if (Math.abs(d) < TRIGGER_PX) return;
-    if (show(cur + (d > 0 ? 1 : -1))) { locked = true; unlockAt = performance.now() + MIN_LOCK_MS; }
-    else anchor = scrollY;              // already at the first/last scene
+  // ---- wheel / trackpad: one scene per gesture, in the gesture's direction ----
+  // A gesture triggers as soon as it has moved 25px. The rest of it (including the
+  // trackpad's momentum) is ignored, unless the user clearly starts a new swipe:
+  // a short pause, a change of direction, or a fresh burst in the momentum tail.
+  const W = { acc: 0, last: 0, locked: false, dir: 0, at: 0, min: Infinity };
+  addEventListener('wheel', e => {
+    if (panelOpen()) return;
+    e.preventDefault();
+    const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1);
+    if (!dy) return;
+    const now = performance.now(), gap = now - W.last, abs = Math.abs(dy), dir = Math.sign(dy);
+    W.last = now;
+    if (W.locked) {
+      const settled = now - W.at > 300;
+      const fresh = gap > 110 || (settled && (dir !== W.dir || (abs > 10 && abs > W.min * 2)));
+      if (!fresh) { W.min = Math.min(W.min, abs); return; }
+      W.locked = false; W.acc = 0;
+    }
+    if (gap > 110 || Math.sign(W.acc) !== dir) W.acc = 0;
+    W.acc += dy;
+    if (Math.abs(W.acc) >= 25) {
+      show(cur + dir);
+      Object.assign(W, { locked: true, dir, at: now, min: abs, acc: 0 });
+    }
+  }, { passive: false });
+
+  // ---- touch: follow the finger; a 30px drag (or a quick flick) moves one scene ----
+  const T = { y: 0, t: 0, done: true };
+  addEventListener('touchstart', e => {
+    if (panelOpen() || e.touches.length > 1) { T.done = true; return; }
+    T.y = e.touches[0].clientY; T.t = performance.now(); T.done = false;
   }, { passive: true });
+  addEventListener('touchmove', e => {
+    if (panelOpen()) return;
+    e.preventDefault();                          // no page scroll / bounce
+    if (T.done) return;
+    const dy = T.y - e.touches[0].clientY;      // finger up = next, finger down = previous
+    if (Math.abs(dy) >= 30) { T.done = true; show(cur + Math.sign(dy)); }
+  }, { passive: false });
+  addEventListener('touchend', e => {
+    if (T.done) return;
+    T.done = true;
+    const dy = T.y - e.changedTouches[0].clientY, dt = performance.now() - T.t;
+    if (Math.abs(dy) >= 12 && Math.abs(dy) / dt > 0.2) show(cur + Math.sign(dy)); // quick flick
+  });
 
-  addEventListener('resize', () => { if (!locked) { jump(mid()); anchor = null; } });
-
-  // keyboard: one scene per key press
-  const contactOpen = () => { const c = document.querySelector('.contact'); return c && !c.hidden; };
+  // ---- keyboard ----
   addEventListener('keydown', e => {
-    if (contactOpen() || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (panelOpen() || e.metaKey || e.ctrlKey || e.altKey) return;
     const k = e.key;
     let n = null;
     if (k === 'ArrowDown' || k === 'PageDown' || (k === ' ' && !e.shiftKey)) n = cur + 1;
@@ -100,32 +107,17 @@
     else if (k === 'End') n = scenes.length - 1;
     if (n === null) return;
     e.preventDefault();
-    show(Math.max(0, Math.min(scenes.length - 1, n)));
+    show(n);
   });
 
-  jump(mid());
-  requestAnimationFrame(() => { if (Math.abs(scrollY - mid()) > 2) jump(mid()); anchor = null; });
-  setHidden();
-  requestAnimationFrame(() => requestAnimationFrame(() => onScreen(cur).forEach(i => scenes[i].classList.add('is-active'))));
-
-  // leaving the homepage: reset the scroll so the next page (and a later visit) starts at the top
-  const toTop = () => { locked = true; clearTimeout(quietTimer); jump(0); };
-  document.addEventListener('click', e => {
-    const a = e.target.closest('a[href]');
-    if (!a || a.hasAttribute('data-contact') || a.target === '_blank' || e.defaultPrevented) return;
-    if (a.origin === location.origin && !a.href.startsWith('mailto:')) toTop();
-  }, true);
-  addEventListener('pagehide', toTop);
-  addEventListener('pageshow', e => { if (e.persisted) { jump(mid()); anchor = null; locked = false; } });
-
   // contact scene: "Back to top" and "Copy email"
-  document.querySelectorAll('[data-top]').forEach(b => b.addEventListener('click', () => {
-    show(0);
-    anchor = null;
-  }));
+  document.querySelectorAll('[data-top]').forEach(b => b.addEventListener('click', () => show(0)));
   document.querySelectorAll('[data-copy-email]').forEach(btn => btn.addEventListener('click', () => {
     const email = 'alveriacher@gmail.com';
     const done = () => { btn.textContent = 'Copied ✓'; setTimeout(() => { btn.textContent = 'Copy email'; }, 2500); };
     try { navigator.clipboard.writeText(email).then(done, () => { btn.textContent = email; }); } catch (e) { btn.textContent = email; }
   }));
+
+  sync();
+  requestAnimationFrame(() => requestAnimationFrame(() => onScreen(cur).forEach(i => scenes[i].classList.add('is-active'))));
 })();

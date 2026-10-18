@@ -88,35 +88,29 @@ body.home-page { height: 100vh; height: 100dvh; overflow: hidden; overscroll-beh
 .scenes-ready .hero__scene.is-leaving { visibility: visible; }
 .scenes-ready .hero__scene.is-active { pointer-events: auto; }
 
-/* scrolling: the page scrolls natively over a tall invisible track that only acts as input
-   (home.js turns each scroll gesture into one scene change); nav, text and footer stay fixed */
-html:has(body.scenes-ready) { scrollbar-width: none; }
-html:has(body.scenes-ready)::-webkit-scrollbar { display: none; }
-body.home-page.scenes-ready { height: auto; overflow: visible; }
-.scenes-ready .hero { position: fixed; inset: 0; }
-.scenes-ready .nav--overlay { position: fixed; }
-.scroll-track { display: none; }
-.scenes-ready .scroll-track { display: block; height: 4000vh; }
+/* the page itself never scrolls: home.js reads wheel / trackpad / swipe / keys directly
+   and swaps one scene per gesture; touch-action: none stops the phone from scrolling or bouncing */
+.scenes-ready .hero { touch-action: none; }
 
 /* line-by-line rise + fade */
 .scenes-ready .scene-line {
-  opacity: 0; transform: translateY(24px);
-  transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1);
+  opacity: 0; transform: translateY(20px);
+  transition: opacity .55s cubic-bezier(.2,.7,.2,1), transform .55s cubic-bezier(.2,.7,.2,1);
 }
 .scenes-ready .is-active .scene-line {
   opacity: 1; transform: none;
-  transition-delay: calc(var(--i, 0) * .12s);
+  transition-delay: calc(var(--i, 0) * .07s);
 }
 .scenes-ready .is-leaving .scene-line {
   opacity: 0; transform: translateY(-16px);
-  transition-duration: .3s; transition-timing-function: ease-in; transition-delay: 0s;
+  transition-duration: .2s; transition-timing-function: ease-in; transition-delay: 0s;
 }
 
 /* About: dark photo background (crossfade), white text; nav + footer turn white. Skills stays white. */
 .hero__bgs { position: absolute; inset: 0; }
 .hero__bg {
   display: block; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
-  opacity: 0; transition: opacity .8s ease;
+  opacity: 0; transition: opacity .5s ease;
 }
 .hero__bg.is-shown { opacity: 1; }
 .hero__bg img { width: 100%; height: 100%; object-fit: cover; }
@@ -133,11 +127,11 @@ body.home-page.scenes-ready { height: auto; overflow: visible; }
 .contact-scene__top { display: inline-flex; align-items: center; gap: 6px; }
 .contact-scene__top svg { width: 10px; height: 10px; transition: transform .25s ease; }
 .contact-scene__top:hover svg { transform: translateY(-2px); }
-.scenes-ready .scene-fade { opacity: 0; transition: opacity .5s ease; }
+.scenes-ready .scene-fade { opacity: 0; transition: opacity .35s ease; }
 .scenes-ready .is-active .scene-fade { opacity: 1; }
-.scenes-ready .is-leaving .scene-fade { opacity: 0; transition-duration: .3s; }
+.scenes-ready .is-leaving .scene-fade { opacity: 0; transition-duration: .2s; }
 .hero__scene[data-theme="dark"] { color: var(--white); }
-.nav--overlay, .hero__foot, .hero__foot .muted { transition: color .6s ease; }
+.nav--overlay, .hero__foot, .hero__foot .muted { transition: color .4s ease; }
 body.is-dark .nav--overlay, body.is-dark .hero__foot { color: var(--white); }
 body[data-scene="about"] .hero__foot .muted { color: #e0e0e2; }
 .hero__scene[data-theme="dark"] .scene__note { color: var(--white); }
@@ -276,7 +270,6 @@ body[data-scene="about"] .hero__foot .muted { color: #e0e0e2; }
   .nav__right { width: auto; gap: 28px; }
 
   .hero { height: 100svh; min-height: 560px; }
-  .scenes-ready .scroll-track { height: 4000svh; }
   .hero__name {
     /* Figma "Homepage – Mobile": lines 54.28px apart at 58.5px, block top 98.28px above centre */
     position: absolute; left: 20px; right: 20px; width: auto; height: auto; transform: translateY(-1.68em);
