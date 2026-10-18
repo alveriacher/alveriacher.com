@@ -76,25 +76,32 @@
     }
   }, { passive: false });
 
-  // ---- touch: follow the finger; a 30px drag (or a quick flick) moves one scene ----
-  const T = { y: 0, t: 0, done: true };
+  // ---- touch: follow the finger; a 20px drag (or a quick flick) moves one scene ----
+  // (text can't be selected on this screen, so a drag that starts on a paragraph
+  // is never taken over by iOS text selection)
+  const T = { y: 0, last: 0, t: 0, done: true };
+  const fire = dy => { T.done = true; show(cur + Math.sign(dy)); };
   addEventListener('touchstart', e => {
     if (panelOpen() || e.touches.length > 1) { T.done = true; return; }
-    T.y = e.touches[0].clientY; T.t = performance.now(); T.done = false;
+    T.y = T.last = e.touches[0].clientY; T.t = performance.now(); T.done = false;
   }, { passive: true });
   addEventListener('touchmove', e => {
     if (panelOpen()) return;
-    e.preventDefault();                          // no page scroll / bounce
+    e.preventDefault();                          // no page scroll / bounce / selection
     if (T.done) return;
-    const dy = T.y - e.touches[0].clientY;      // finger up = next, finger down = previous
-    if (Math.abs(dy) >= 30) { T.done = true; show(cur + Math.sign(dy)); }
+    T.last = e.touches[0].clientY;
+    const dy = T.y - T.last;                     // finger up = next, finger down = previous
+    if (Math.abs(dy) >= 20) fire(dy);
   }, { passive: false });
-  addEventListener('touchend', e => {
+  const end = e => {
     if (T.done) return;
+    const t = e.changedTouches && e.changedTouches[0];
+    const dy = T.y - (t ? t.clientY : T.last), dt = performance.now() - T.t;
     T.done = true;
-    const dy = T.y - e.changedTouches[0].clientY, dt = performance.now() - T.t;
-    if (Math.abs(dy) >= 12 && Math.abs(dy) / dt > 0.2) show(cur + Math.sign(dy)); // quick flick
-  });
+    if (Math.abs(dy) >= 10 && Math.abs(dy) / dt > 0.15) show(cur + Math.sign(dy)); // quick flick
+  };
+  addEventListener('touchend', end);
+  addEventListener('touchcancel', end);
 
   // ---- keyboard ----
   addEventListener('keydown', e => {

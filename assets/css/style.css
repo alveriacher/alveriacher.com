@@ -90,7 +90,12 @@ body.home-page { height: 100vh; height: 100dvh; overflow: hidden; overscroll-beh
 
 /* the page itself never scrolls: home.js reads wheel / trackpad / swipe / keys directly
    and swaps one scene per gesture; touch-action: none stops the phone from scrolling or bouncing */
-.scenes-ready .hero { touch-action: none; }
+.scenes-ready .hero {
+  touch-action: none;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+.scenes-ready .hero img { -webkit-user-drag: none; pointer-events: none; }
+.scenes-ready .contact-scene .contact__email { -webkit-user-select: text; user-select: text; }
 
 /* line-by-line rise + fade */
 .scenes-ready .scene-line {
