@@ -55,8 +55,8 @@ img { display: block; max-width: 100%; }
 .nav a:hover::after, .nav a[aria-current="page"]::after { transform: scaleX(1); }
 .nav--overlay { position: absolute; left: 0; right: 0; background: transparent; }
 
-/* ---------- Homepage hero (always fits one screen, no scrolling) ---------- */
-body.home-page { height: 100vh; height: 100dvh; overflow: hidden; }
+/* ---------- Homepage hero (always fits one screen; scroll swaps the text, not the page) ---------- */
+body.home-page { height: 100vh; height: 100dvh; overflow: hidden; overscroll-behavior: none; }
 .hero {
   /* scale by width, but never taller than the screen */
   --hu: min(var(--u), calc(100vh / 982));
@@ -74,15 +74,95 @@ body.home-page { height: 100vh; height: 100dvh; overflow: hidden; }
   text-transform: uppercase;
   white-space: nowrap;
 }
-.hero__name span {
-  position: absolute;
-  opacity: 0; transform: translateY(24px);
-  animation: rise .9s cubic-bezier(.2,.7,.2,1) forwards;
-}
+.hero__name span { position: absolute; }
 .hero__name span:nth-child(1) { left: calc(416 * var(--hu)); top: 0; }
-.hero__name span:nth-child(2) { left: calc(594 * var(--hu)); top: calc(130 * var(--hu)); animation-delay: .12s; }
-.hero__name span:nth-child(3) { left: calc(767 * var(--hu)); top: calc(256 * var(--hu)); animation-delay: .24s; }
-@keyframes rise { to { opacity: 1; transform: none; } }
+.hero__name span:nth-child(2) { left: calc(594 * var(--hu)); top: calc(130 * var(--hu)); }
+.hero__name span:nth-child(3) { left: calc(767 * var(--hu)); top: calc(256 * var(--hu)); }
+
+/* scenes: Hello → About → Skills, stacked in the same screen; only the active one shows */
+.hero__scene { position: absolute; inset: 0; }
+.hero__scene:not([data-scene="hello"]) { display: none; }          /* no-JS: Hello only */
+.scenes-ready .hero__scene:not([data-scene="hello"]) { display: block; }
+.scenes-ready .hero__scene { visibility: hidden; pointer-events: none; }
+.scenes-ready .hero__scene.is-active,
+.scenes-ready .hero__scene.is-leaving { visibility: visible; }
+.scenes-ready .hero__scene.is-active { pointer-events: auto; }
+
+/* scrolling: the page scrolls natively over a tall invisible track that only acts as input
+   (home.js turns each scroll gesture into one scene change); nav, text and footer stay fixed */
+html:has(body.scenes-ready) { scrollbar-width: none; }
+html:has(body.scenes-ready)::-webkit-scrollbar { display: none; }
+body.home-page.scenes-ready { height: auto; overflow: visible; }
+.scenes-ready .hero { position: fixed; inset: 0; }
+.scenes-ready .nav--overlay { position: fixed; }
+.scroll-track { display: none; }
+.scenes-ready .scroll-track { display: block; height: 4000vh; }
+
+/* line-by-line rise + fade */
+.scenes-ready .scene-line {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1);
+}
+.scenes-ready .is-active .scene-line {
+  opacity: 1; transform: none;
+  transition-delay: calc(var(--i, 0) * .12s);
+}
+.scenes-ready .is-leaving .scene-line {
+  opacity: 0; transform: translateY(-16px);
+  transition-duration: .3s; transition-timing-function: ease-in; transition-delay: 0s;
+}
+
+/* About: dark photo background (crossfade), white text; nav + footer turn white. Skills stays white. */
+.hero__bgs { position: absolute; inset: 0; }
+.hero__bg {
+  display: block; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transition: opacity .8s ease;
+}
+.hero__bg.is-shown { opacity: 1; }
+.hero__bg img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Contact scene: the contact card over the blurred Skills screen, reached by scrolling past Skills */
+.contact-scene__scrim {
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,.75);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.contact-scene__wrap { position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; }
+.contact-scene__wrap > .scene-line { width: min(560px, 100%); }
+.contact-scene .contact__box { opacity: 1; transform: none; transition: none; width: 100%; }
+.contact-scene__top { display: inline-flex; align-items: center; gap: 6px; }
+.contact-scene__top svg { width: 10px; height: 10px; transition: transform .25s ease; }
+.contact-scene__top:hover svg { transform: translateY(-2px); }
+.scenes-ready .scene-fade { opacity: 0; transition: opacity .5s ease; }
+.scenes-ready .is-active .scene-fade { opacity: 1; }
+.scenes-ready .is-leaving .scene-fade { opacity: 0; transition-duration: .3s; }
+.hero__scene[data-theme="dark"] { color: var(--white); }
+.nav--overlay, .hero__foot, .hero__foot .muted { transition: color .6s ease; }
+body.is-dark .nav--overlay, body.is-dark .hero__foot { color: var(--white); }
+body[data-scene="about"] .hero__foot .muted { color: #e0e0e2; }
+.hero__scene[data-theme="dark"] .scene__note { color: var(--white); }
+
+/* About + Skills text (Figma "Homepage-About" 112:21684, "Homepage-Skills" 112:21663) */
+.scene {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: calc(24 * var(--hu));
+  text-align: center;
+}
+.scene--about { top: calc(50% - 236 * var(--hu)); width: calc(1271 * var(--hu)); }
+.scene--skills { top: calc(50% - 244 * var(--hu)); width: calc(840 * var(--hu)); }
+.nw { white-space: nowrap; }
+.scene__group { display: flex; flex-direction: column; align-items: center; }
+.scene__title, .scene__lead {
+  font-family: var(--serif); font-weight: 400; line-height: 1.3;
+  letter-spacing: -0.02em; text-transform: uppercase;
+}
+.scene__title { font-size: calc(80 * var(--hu)); }
+.scene__lead { font-size: calc(48 * var(--hu)); margin-top: calc(-10.4 * var(--hu)); } /* Figma's mixed-size text sits the lead 10.4px closer to the title */
+.scene__note {
+  width: calc(408 * var(--hu));
+  font: 400 calc(20 * var(--hu))/1.3 var(--sans); letter-spacing: -0.02em;
+  color: var(--grey);
+}
 
 .hero__foot {
   position: absolute; left: 0; right: 0;
@@ -196,6 +276,7 @@ body.home-page { height: 100vh; height: 100dvh; overflow: hidden; }
   .nav__right { width: auto; gap: 28px; }
 
   .hero { height: 100svh; min-height: 560px; }
+  .scenes-ready .scroll-track { height: 4000svh; }
   .hero__name {
     /* Figma "Homepage – Mobile": lines 54.28px apart at 58.5px, block top 98.28px above centre */
     position: absolute; left: 20px; right: 20px; width: auto; height: auto; transform: translateY(-1.68em);
@@ -208,6 +289,14 @@ body.home-page { height: 100vh; height: 100dvh; overflow: hidden; }
   .hero__name span:nth-child(2) { padding-left: 20%; }
   .hero__name span:nth-child(3) { padding-left: 36%; }
   .hero__foot { bottom: 21px; padding: 0 20px; font-size: 10px; flex-direction: column; gap: 4px; }
+
+  /* About + Skills on phones: centred between nav and footer, 20px side margins */
+  .scene { left: 20px; right: 20px; width: auto; top: 50%; transform: translateY(-50%); gap: 24px; }
+  .scene--skills { gap: 28px; }
+  .br-desktop { display: none; }
+  .scene__title { font-size: clamp(40px, 12.3vw, 72px); line-height: 1.15; }
+  .scene__lead { font-size: clamp(22px, 6.15vw, 34px); line-height: 1.25; margin-top: 0; }
+  .scene__note { width: auto; max-width: 300px; font-size: 14px; line-height: 1.4; }
 
   /* 4-col grid: 20px margins, 16px gutters; intro text starts on column 2 */
   .intro { height: auto; min-height: 0; padding: 42px 22px 47px calc(20px + (100% - 88px) / 4 + 16px); }
@@ -240,6 +329,7 @@ body.home-page { height: 100vh; height: 100dvh; overflow: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .hero__name span { animation: none; opacity: 1; transform: none; }
+  .scenes-ready .scene-line { transition: none !important; transform: none !important; }
+  .hero__bg, .nav--overlay, .hero__foot, .hero__foot .muted, .scenes-ready .scene-fade { transition: none; }
   .case__media, .case__cta { transition: none; }
 }

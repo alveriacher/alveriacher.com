@@ -67,6 +67,9 @@
   </main>
 
   <script>
+    // always open the Work page at the top (the homepage keeps its own scroll for its screens)
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    if (!location.hash) scrollTo({ top: 0, left: 0, behavior: 'instant' });
     const nav = document.getElementById('nav');
     addEventListener('scroll', () => nav.classList.toggle('is-scrolled', scrollY > 8), { passive: true });
   </script>

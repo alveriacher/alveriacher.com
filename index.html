@@ -19,16 +19,74 @@
   </header>
 
   <main class="hero">
-    <h1 class="hero__name" aria-label="Hello, I'm Alveria Cher">
-      <span>Hello, I’m</span>
-      <span>Alveria</span>
-      <span>Cher</span>
-    </h1>
+    <!-- full-screen background for About (crossfades in and out when the scene changes) -->
+    <div class="hero__bgs" aria-hidden="true">
+      <picture class="hero__bg" data-for="about">
+        <source media="(max-width: 820px)" srcset="assets/img/home-about-m.webp">
+        <img src="assets/img/home-about-1x.webp" srcset="assets/img/home-about-1x.webp 1512w, assets/img/home-about.webp 3024w" sizes="100vw" alt="" decoding="async">
+      </picture>
+    </div>
+
+    <!-- Screen 1: Hello -->
+    <section class="hero__scene" data-scene="hello" aria-label="Introduction">
+      <h1 class="hero__name" aria-label="Hello, I'm Alveria Cher">
+        <span class="scene-line">Hello, I’m</span>
+        <span class="scene-line">Alveria</span>
+        <span class="scene-line">Cher</span>
+      </h1>
+    </section>
+
+    <!-- Screen 2: About -->
+    <section class="hero__scene" data-scene="about" data-theme="dark" id="about" aria-label="About">
+      <div class="scene scene--about">
+        <div class="scene__group">
+          <h2 class="scene__title scene-line">About</h2>
+          <p class="scene__lead scene-line">Alveria Cher is a UI/UX designer who turns complex information into intuitive, polished interfaces — across <span class="nw">public-sector</span>, healthcare and enterprise platforms.</p>
+        </div>
+        <p class="scene__note scene-line">9+ years in visual and communication design. Uses AI to move faster on research and prototyping, never at the cost of craft.</p>
+      </div>
+    </section>
+
+    <!-- Screen 3: Skills -->
+    <section class="hero__scene" data-scene="skills" id="skills" aria-label="Skills and tools">
+      <div class="scene scene--skills">
+        <div class="scene__group">
+          <h2 class="scene__title scene-line">What I do</h2>
+          <p class="scene__lead scene-line">UI/UX Design /digital design/ art direction/ brand identity</p>
+        </div>
+        <div class="scene__group">
+          <h2 class="scene__title scene-line">What I use</h2>
+          <p class="scene__lead scene-line">Figma/ Adobe Creative Suite&nbsp;/<br class="br-desktop"> AI platforms (Claude, ChatGPT)</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 4: Contact card over the (blurred) Skills screen -->
+    <section class="hero__scene contact-scene" data-scene="contact" data-over="skills" id="contact" aria-label="Contact">
+      <div class="contact-scene__scrim scene-fade"></div>
+      <div class="contact-scene__wrap">
+        <div class="scene-line">
+          <div class="contact__box contact-scene__box" role="group" aria-labelledby="contact-scene-title">
+            <button class="contact__close contact-scene__top" type="button" data-top>Back to top
+              <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M5 9V1.5M1.8 4.5 5 1.3l3.2 3.2"/></svg>
+            </button>
+            <h2 class="contact__title" id="contact-scene-title">Let’s work<br>together</h2>
+            <p class="contact__email">alveriacher@gmail.com</p>
+            <div class="contact__actions">
+              <button class="contact__btn" type="button" data-copy-email>Copy email</button>
+              <a class="contact__btn contact__btn--ghost" href="mailto:alveriacher@gmail.com" target="_blank" rel="noopener">Open email app</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <div class="hero__foot">
       <p>UI/UX Designer<span class="muted"> | Senior Graphic Designer</span></p>
       <p>@2026</p>
     </div>
   </main>
+  <script src="assets/js/home.js"></script>
   <script src="assets/js/contact.js"></script>
 </body>
 </html>
