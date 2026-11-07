@@ -119,6 +119,7 @@
 
   // contact scene: "Back to top" and "Copy email"
   document.querySelectorAll('[data-top]').forEach(b => b.addEventListener('click', () => show(0)));
+  document.querySelectorAll('[data-next]').forEach(b => b.addEventListener('click', () => show(cur + 1)));
   document.querySelectorAll('[data-copy-email]').forEach(btn => btn.addEventListener('click', () => {
     const email = 'alveriacher@gmail.com';
     const done = () => { btn.textContent = 'Copied ✓'; setTimeout(() => { btn.textContent = 'Copy email'; }, 2500); };

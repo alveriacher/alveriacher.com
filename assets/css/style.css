@@ -178,6 +178,30 @@ body[data-scene="about"] .hero__foot .muted { color: #e0e0e2; }
 }
 .hero__foot .muted { color: var(--grey); }
 
+/* Hello screen effect (hello-fx.js): once the name has risen in, a WebGL copy takes over
+   (silver shimmer + RGB fluid under the mouse); the HTML name returns instantly when the screen changes */
+.hello-fx { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; pointer-events: none; }
+.hero__scene.fx-on .hello-fx { opacity: 1; }
+.hero__scene.fx-on .hero__name { opacity: 0; }
+
+/* scroll cue: dark-grey chevron centred on the footer line, Hello screen only.
+   Motion follows Capella Singapore's hero arrow: drop in + fade in, settle, drift, slide out + fade (3s loop) */
+.hero__cue {
+  position: absolute; left: 50%; bottom: calc(114 * var(--hu)); transform: translateX(-50%); z-index: 2;
+  height: 21px; padding: 0 10px; display: grid; place-items: center;
+  font-size: 14px; color: var(--grey-dark); background: none; border: 0; cursor: pointer;
+  opacity: 0; visibility: hidden; transition: opacity .4s ease, visibility 0s linear .4s;
+}
+body[data-scene="hello"] .hero__cue { opacity: 1; visibility: visible; transition: opacity .8s ease 1s, visibility 0s; }
+.hero__cue svg { display: block; width: 1.45em; height: .5em; overflow: visible; animation: cue-drift 3s ease-out infinite; }
+.hero__cue:focus-visible { outline: 2px solid var(--black); outline-offset: 2px; }
+@keyframes cue-drift {
+  0%   { opacity: 0; transform: translateY(-.7em); }
+  20%  { opacity: 1; transform: translateY(0); }
+  70%  { opacity: 1; transform: translateY(.2em); }
+  100% { opacity: 0; transform: translateY(.9em); }
+}
+
 /* ---------- Work page intro ---------- */
 .intro { height: calc(341 * var(--u)); min-height: 220px; position: relative; }
 .intro__block { position: absolute; left: calc(876 * var(--u)); top: calc(102 * var(--u)); }
@@ -290,6 +314,7 @@ body[data-scene="about"] .hero__foot .muted { color: #e0e0e2; }
   .hero__name span:nth-child(2) { padding-left: 20%; }
   .hero__name span:nth-child(3) { padding-left: 36%; }
   .hero__foot { bottom: 21px; padding: 0 20px; font-size: 10px; flex-direction: column; gap: 4px; }
+  .hero__cue { left: auto; right: 14px; transform: none; bottom: 21px; height: 15px; padding: 0 6px; font-size: 10px; }
 
   /* About + Skills on phones: centred between nav and footer, 20px side margins */
   .scene { left: 20px; right: 20px; width: auto; top: 50%; transform: translateY(-50%); gap: 24px; }
@@ -331,6 +356,7 @@ body[data-scene="about"] .hero__foot .muted { color: #e0e0e2; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .scenes-ready .scene-line { transition: none !important; transform: none !important; }
+  .hero__cue svg { animation: none; }
   .hero__bg, .nav--overlay, .hero__foot, .hero__foot .muted, .scenes-ready .scene-fade { transition: none; }
   .case__media, .case__cta { transition: none; }
 }
