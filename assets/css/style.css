@@ -166,6 +166,19 @@ body[data-scene="about"] .hero__foot .muted { color: #e0e0e2; }
   color: var(--grey);
 }
 
+/* Skills: each item takes a turn with a soft silver sheen (the same look as the Hello "B shimmer" option).
+   7 items, one every 1.6s (each pass takes 1.8s), then a short rest: a 12.8s loop that starts 1s after the screen appears. */
+.shim { -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+body[data-scene="skills"] .scene--skills .shim {
+  color: transparent;
+  background: linear-gradient(105deg, #000 0%, #000 42%, #8f8f8f 48%, #e9e9e9 50%, #8f8f8f 52%, #000 58%, #000 100%);
+  background-size: 300% 100%; background-position: 100% 0;
+  -webkit-background-clip: text; background-clip: text;
+  animation: shim-turn 12.8s cubic-bezier(.45,.05,.25,1) infinite;
+  animation-delay: calc(1s + var(--n) * 1.6s);
+}
+@keyframes shim-turn { 0% { background-position: 100% 0; } 14%, 100% { background-position: 0% 0; } }
+
 .hero__foot {
   position: absolute; left: 0; right: 0;
   bottom: calc(114 * var(--hu));
@@ -357,6 +370,7 @@ body[data-scene="hello"] .hero__cue { opacity: 1; visibility: visible; transitio
   html { scroll-behavior: auto; }
   .scenes-ready .scene-line { transition: none !important; transform: none !important; }
   .hero__cue svg { animation: none; }
+  body[data-scene="skills"] .scene--skills .shim { animation: none; color: inherit; background: none; }
   .hero__bg, .nav--overlay, .hero__foot, .hero__foot .muted, .scenes-ready .scene-fade { transition: none; }
   .case__media, .case__cta { transition: none; }
 }
